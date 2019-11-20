@@ -231,7 +231,7 @@ while(True):
                     floating_current_alpha = 255;
                 floating_alpha_gradient = -floating_alpha_gradient
 
-            if(i != 0 and not(i <= floating_current_alpha and not symmetryBackwards)):
+            if(i != 0 and not(i <= initial_traversion_end and not symmetryBackwards)):
                 floating_current_alpha += floating_alpha_gradient
             currentalpha = int(floating_current_alpha)
             for d in range(0,2):
@@ -257,7 +257,7 @@ while(True):
                     #print(str(moving) + ":" + str(currentalpha))
                     while runwhile:
                         #print(str(moving) + ":" + str(currentalpha))
-                        alayer[moving[0],moving[1]] = currentalpha
+                        alayer[moving[0],moving[1]] = int((currentalpha * (pixels[moving[0], moving[1]][3])) / 255)
                         moving = [moving[0] + currentperp[0], moving[1] + currentperp[1]]
                         if (not((0 <= moving[0] < width) and (0 <= moving[1] < height))):
                             runwhile = False
