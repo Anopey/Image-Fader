@@ -1,6 +1,51 @@
 from PIL import Image
 import time
 
+class 2D_Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def add(self, x,y):
+        self.x += x
+        self.y += y
+
+    def add2DVector(self, vector2d):
+        self.x += vector2d.x
+        self.y += vector2d.y
+
+    def __add__(self, o):
+        if(isinstance(o, 2D_Vector)):
+            self.add(o.x, o.y)
+        else:
+            self.x += o
+            self.y += o
+
+    def __sub__(self, o):
+        if(isinstance(o, 2D_Vector)):
+            self.add(-o.x, -o.y)
+        else:
+            self.x -= o
+            self.y -= o
+
+    def __str__(self):
+        return "( " + self.x + ", " + self.y + ")"
+
+    def __mul__(self, o):
+        if(isinstance(o, 2D_Vector)):
+            self.x *= o.x
+            self.y *= o.y
+        else:
+            self.x *= o
+            self.y *= o
+
+    def __truediv__(self, o):
+        if(isinstance(o, 2D_Vector)):
+            self.x /= o.x
+            self.y /= o.y
+        else:
+            self.x /= o
+            self.y /= o
 
 while(True):
 #get user input.
@@ -28,7 +73,7 @@ while(True):
 
         if(not(0 <= initial[0] < width) or not(0 <= initial[1] < height)):
             print("Yeah... That position is not really within the image itself.")
-            quit()
+            continue;
 
         #now for direction
         print("Please repeat the same process for the direction of fade, which will be starting from the initial position you have just entered.")
@@ -207,12 +252,39 @@ while(True):
         frames_left = 0
         while(frames_left < 1):
             frames_left = input("How many instance images would you like to be produced? Please input an integer >= 1: ")
-        #must get user input as to start of vector from which fade will start
-        print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the point of the image from which all pixels perpendicular to the direction of travel specified will be colored.")
+        #must get user input as to start of vector from which coloring will start
+        print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the starting point - point of the image from which all pixels perpendicular to the direction of travel specified will be colored.")
         xstr = input("Please Input the x coordinate of the initial vector position: ")
         ystr = input("Please Input the y coordinate of the initial vector position: ")
-        initial = [int(xstr),int(ystr)]
+        initial = 2D_Vector(int(xstr),int(ystr))
 
+        if(not(0 <= initial.x < width) or not(0 <= initial.y < height)):
+            print("Yeah... That position is not really within the image itself.")
+            continue;
+
+        #get direction
+        print("Please repeat the same process for the direction of colouring, which will be starting from the initial position you have just entered.")
+        xstr = input("Please Input the X coordinate of the direction. Only inputs of -1, 0, and 1 are allowed: ")
+        ystr = input("Please Input the Y coordinate of the direction. Only inputs of -1, 0, and 1 are allowed: ")
+        #check for bad input
+        if(not(-1 <= int(xstr) <= 1) or not(-1 <= int(ystr) <= 1)):
+            print("Illegal input for direction. Terminating.")
+            continue;
+        direction = 2D_Vector(int(xstr), int(ystr))
+        #get final point
+        print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the end point. Input -1 if you would like this to be whenever the image itself ends.")
+        xstr1 = input("Please Input the x coordinate of the final vector position: ")
+        ystr1 = input("Please Input the y coordinate of the final vector position: ")
+        final = (int(xstr),int(ystr))
+         
+        if(final.x == -1 or final.y == -1):
+            #deduce final point
+            while(not(0 <= final.x < width) or not(0 <= final.y < height)):
+                final += direction
+            final -= direction
+        if(not(0 <= final.x < width) or not(0 <= final.y < height)):
+            print("Yeah... That position is not really within the image itself.")
+            continue;
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
