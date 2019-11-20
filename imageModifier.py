@@ -316,7 +316,7 @@ while(True):
         while(G < 0 or G > 255):
             G = int(inpt("G value (0-255): "))
         while(B < 0 or B > 255):
-        B = int(inpt("B value (0-255): "))
+            B = int(inpt("B value (0-255): "))
 
 
         #now get the name of the file we shall create in the end.
@@ -360,7 +360,7 @@ while(True):
             traversion_left += 1
             current += direction
 
-        current = [initial[0], initial[1]]
+        current = copy(initial)
 
         #now extend traversion left, because image may not be a box.
         curperp = perp1
@@ -383,19 +383,53 @@ while(True):
                 test_point = [test_point[0] + direction[0], test_point[1] + direction[1]]
 
         print(traversion_left)
-
+        
         #now the fun part :)
+        traversion_factor = traversion_left / frames_left
+        frames_done = 0
+        traversion_done = traversion_factor
+        next_frame = int(traversion_factor)
 
+        current = Vector2D(initial.x, initial.y)
+        curperp = perp1
+        timeout = 1.0
         for i in range(0, traversion_left + 1):
+            if(i == next_frame):
+                #produce an image file
+                traversion_done += traversion_factor
+                next_frame = int(frames_done)
+                im_saved = Image.fromarray(pixels)
+                path = finalfilename[:len(finalfilename - 4)]
+                path += str(frames_done) + ".png"
+                pixels.save(path)
+                frames_done += 1
             for j in range(0 , 2):
-                if(j == 0)
-                    current = Vector2D(initial.x + direction.x * i, initial.y)
+                if(j == 0):
+                    if(direction.x == 0):
+                        timeout += 0.5
+                        continue
+                    current.x = initial.x + direction.x * i
                 else:
-                    current = Vector2D(initial.x, initial.y + direction.x * i)
+                    if(direction.y == 0):
+                        timeout += 0.5
+                        continue
+                    current.y = initial.y + direction.y * i
+                if is_within_image(current):
+                    for p in range(0,2):
+                        if(p == 1):
+                            curperp = perp2
+                        painted = copy(current)
+                        while (is_within_image(painted)):
+                            pixels[painted.x, painted.y] = (R, G, B, pixels[painted.x, painted.y])
+                            painted += curperp
+                else:
+                    painted = copy(current)
+                    painted += validperp * (int)timeout
+                    while (is_within_image(painted)):
+                            pixels[painted.x, painted.y] = (R, G, B, pixels[painted.x, painted.y])
+                            painted += curperp
+                    timeout += 0.5
 
-            if :
-
-            else:
 
 
 
