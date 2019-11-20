@@ -1,7 +1,7 @@
 from PIL import Image
 import time
 
-class 2D_Vector:
+class Vector2D:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -15,37 +15,56 @@ class 2D_Vector:
         self.y += vector2d.y
 
     def __add__(self, o):
-        if(isinstance(o, 2D_Vector)):
+        if(isinstance(o, Vector2D)):
             self.add(o.x, o.y)
         else:
             self.x += o
             self.y += o
+        return self
 
     def __sub__(self, o):
-        if(isinstance(o, 2D_Vector)):
+        if(isinstance(o, Vector2D)):
             self.add(-o.x, -o.y)
         else:
             self.x -= o
             self.y -= o
+        return self
 
     def __str__(self):
         return "( " + self.x + ", " + self.y + ")"
 
     def __mul__(self, o):
-        if(isinstance(o, 2D_Vector)):
+        if(isinstance(o, Vector2D)):
             self.x *= o.x
             self.y *= o.y
         else:
             self.x *= o
             self.y *= o
+        return self
 
     def __truediv__(self, o):
-        if(isinstance(o, 2D_Vector)):
+        if(isinstance(o, Vector2D)):
             self.x /= o.x
             self.y /= o.y
         else:
             self.x /= o
             self.y /= o
+        return self
+
+    def __isub__(self, o):
+        return self - o
+
+
+    def __iadd__(self, o):
+        return self + o
+
+    def __imul__(self,o):
+        return self * o
+
+    def __idiv__(self,o):
+        return self / o
+
+
 
 while(True):
 #get user input.
@@ -99,7 +118,7 @@ while(True):
         #now get the name of the file we shall create in the end.
         finalfilename = ""
         while (len(finalfilename) < 1):
-            finalfilename = input("Finally, enter the name of the file you would like created: ")
+            finalfilename = input("Finally, enter the URL of the file you would like created: ")
         if(len(finalfilename) < 5):
             finalfilename += ".png"
         if(not(finalfilename[len(finalfilename) - 4:] == ".png")):
@@ -251,12 +270,12 @@ while(True):
         width,height = im.size
         frames_left = 0
         while(frames_left < 1):
-            frames_left = input("How many instance images would you like to be produced? Please input an integer >= 1: ")
+            frames_left = int(input("How many instance images would you like to be produced? Please input an integer >= 1: "))
         #must get user input as to start of vector from which coloring will start
         print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the starting point - point of the image from which all pixels perpendicular to the direction of travel specified will be colored.")
         xstr = input("Please Input the x coordinate of the initial vector position: ")
         ystr = input("Please Input the y coordinate of the initial vector position: ")
-        initial = 2D_Vector(int(xstr),int(ystr))
+        initial = Vector2D(int(xstr),int(ystr))
 
         if(not(0 <= initial.x < width) or not(0 <= initial.y < height)):
             print("Yeah... That position is not really within the image itself.")
@@ -270,7 +289,7 @@ while(True):
         if(not(-1 <= int(xstr) <= 1) or not(-1 <= int(ystr) <= 1)):
             print("Illegal input for direction. Terminating.")
             continue;
-        direction = 2D_Vector(int(xstr), int(ystr))
+        direction = Vector2D(int(xstr), int(ystr))
         #get final point
         print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the end point. Input -1 if you would like this to be whenever the image itself ends.")
         xstr1 = input("Please Input the x coordinate of the final vector position: ")
@@ -285,6 +304,88 @@ while(True):
         if(not(0 <= final.x < width) or not(0 <= final.y < height)):
             print("Yeah... That position is not really within the image itself.")
             continue;
+
+        #get color
+
+        print("Now please enter the color in RGB format.")
+        R = -1
+        G = -1
+        B = -1
+        while(R < 0 or R > 255):
+            R = int(inpt("R value (0-255): "))
+        while(G < 0 or G > 255):
+            G = int(inpt("G value (0-255): "))
+        while(B < 0 or B > 255):
+        B = int(inpt("B value (0-255): "))
+
+
+        #now get the name of the file we shall create in the end.
+        finalfilename = ""
+        while (len(finalfilename) < 1):
+            finalfilename = input("Finally, enter the URL of the file you would like created. The number of the frame of each image will be attached as a suffix to the name: ")
+        if(len(finalfilename) < 5):
+            finalfilename += ".png"
+        if(not(finalfilename[len(finalfilename) - 4:] == ".png")):
+            finalfilename += ".png"
+
+        #now we shall start the process!
+        def is_within_image(point):
+            return ((0 <= point.x < width) and (0 <= point.y < height))
+
+        def image_within_dir(point, direc, timeout):
+            while timeout > 0:
+                timeout -= 1
+                point += direc
+                if(is_within_image(point)):
+                    return True
+            return False
+
+
+        #find the two perpendiculars
+        if direction.x is 0:
+            perp1 = Vector2D(1,0)
+            perp2 = Vector2D(-1,0)
+        elif direction.y is 0:
+            perp1 = Vector2D(0,1)
+            perp2 = Vector2D(0,-1)
+        else:
+            perp1 = Vector2D(direction.x, -direction.y)
+            perp2 = Vector2D(-direction.x, direction.y)
+
+    #find length of our traversion and thus gradient.
+        traversion_left = 0
+
+        current = Vector2D(initial.x, initial.y)
+        while (is_within_image(current)):
+            traversion_left += 1
+            current += direction
+
+        current = [initial[0], initial[1]]
+
+        #now extend traversion left, because image may not be a box.
+        curperp = perp1
+
+        proper_traversion = traversion_left
+
+        print(proper_traversion)
+
+        validperp = curperp
+
+        for i in range(0,2):
+            if(i == 1 and traversion_left == proper_traversion):
+                curperp = perp2
+                validperp = perp2
+            test_point = (initial + direction * (traversion_left + 1))
+            timeout = 1
+            while image_within_dir(test_point, curperp, timeout):
+                traversion_left += 1
+                timeout += 1
+                test_point = [test_point[0] + direction[0], test_point[1] + direction[1]]
+
+        print(traversion_left)
+
+        #now the fun part :)
+
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
