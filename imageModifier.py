@@ -4,11 +4,11 @@ import time
 
 while(True):
 #get user input.
-    initialInput = input("Please input one of the following for different services: 'quit', 'pixelFade' - ")
+    initialInput = input("Please input one of the following for different services: 'quit', 'pixelFade', 'gradualColorer' - ")
     if(initialInput == "quit"):
         quit()
 
-    if(initialInput == "pixelFade"):
+    if(initialInput == "pixelFade" or initialInput == "gradualColorer"):
         filename = input("Please input URL of file desired in PNG or JPG/JPEG format: ")
         im = Image.open(filename).convert("RGBA")
     #PIXEL FADE---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -196,6 +196,22 @@ while(True):
 
         im.putalpha(alphalayer)
         im.save(finalfilename)
+    #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    elif(initialInput == "gradualColorer"):
+        pixels = im.load()
+        width,height = im.size
+        frames_left = 0
+        while(frames_left < 1):
+            frames_left = input("How many instance images would you like to be produced? Please input an integer >= 1: ")
+        #must get user input as to start of vector from which fade will start
+        print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the point of the image from which all pixels perpendicular to the direction of travel specified will be colored.")
+        xstr = input("Please Input the x coordinate of the initial vector position: ")
+        ystr = input("Please Input the y coordinate of the initial vector position: ")
+        initial = [int(xstr),int(ystr)]
 
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #END----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
