@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw
 import time
 
 class Vector2D:
@@ -14,55 +14,66 @@ class Vector2D:
         self.x += vector2d.x
         self.y += vector2d.y
 
+    def copy(self):
+        return Vector2D(self.x, self.y)
+
     def __add__(self, o):
+        r = self.copy()
         if(isinstance(o, Vector2D)):
-            self.add(o.x, o.y)
+            r.add(o.x, o.y)
         else:
-            self.x += o
-            self.y += o
-        return self
+            r.x += o
+            r.y += o
+        return r
 
     def __sub__(self, o):
+        r = self.copy()
         if(isinstance(o, Vector2D)):
-            self.add(-o.x, -o.y)
+            r.add(-o.x, -o.y)
         else:
-            self.x -= o
-            self.y -= o
-        return self
+            r.x -= o
+            r.y -= o
+        return r
 
     def __str__(self):
-        return "( " + self.x + ", " + self.y + ")"
+        return "( " + str(self.x) + ", " + str(self.y) + ")"
 
     def __mul__(self, o):
+        r = self.copy()
         if(isinstance(o, Vector2D)):
-            self.x *= o.x
-            self.y *= o.y
+            r.x *= o.x
+            r.y *= o.y
         else:
-            self.x *= o
-            self.y *= o
-        return self
+            r.x *= o
+            r.y *= o
+        return r
 
     def __truediv__(self, o):
+        r = self.copy()
         if(isinstance(o, Vector2D)):
-            self.x /= o.x
-            self.y /= o.y
+            r.x /= o.x
+            r.y /= o.y
         else:
-            self.x /= o
-            self.y /= o
-        return self
+            r.x /= o
+            r.y /= o
+        return r
 
     def __isub__(self, o):
-        return self - o
+        self = self - o
+        return self
 
 
     def __iadd__(self, o):
-        return self + o
+        self = self + o
+        return self
 
     def __imul__(self,o):
-        return self * o
+        self = self * o
+        return self
 
     def __idiv__(self,o):
-        return self / o
+        self = self / o
+        return self
 
 
 
@@ -266,7 +277,6 @@ while(True):
     #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     #GRADUAL COLORER----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     elif(initialInput == "gradualColorer"):
-        pixels = im.load()
         width,height = im.size
         frames_left = 0
         while(frames_left < 1):
@@ -276,7 +286,6 @@ while(True):
         xstr = input("Please Input the x coordinate of the initial vector position: ")
         ystr = input("Please Input the y coordinate of the initial vector position: ")
         initial = Vector2D(int(xstr),int(ystr))
-
         if(not(0 <= initial.x < width) or not(0 <= initial.y < height)):
             print("Yeah... That position is not really within the image itself.")
             continue;
@@ -294,7 +303,7 @@ while(True):
         print("Image size is " + str(width) + "x" + str(height) + "\nNow please input the end point. Input -1 if you would like this to be whenever the image itself ends.")
         xstr1 = input("Please Input the x coordinate of the final vector position: ")
         ystr1 = input("Please Input the y coordinate of the final vector position: ")
-        final = (int(xstr),int(ystr))
+        final = Vector2D(int(xstr),int(ystr))
          
         if(final.x == -1 or final.y == -1):
             #deduce final point
@@ -312,11 +321,11 @@ while(True):
         G = -1
         B = -1
         while(R < 0 or R > 255):
-            R = int(inpt("R value (0-255): "))
+            R = int(input("R value (0-255): "))
         while(G < 0 or G > 255):
-            G = int(inpt("G value (0-255): "))
+            G = int(input("G value (0-255): "))
         while(B < 0 or B > 255):
-            B = int(inpt("B value (0-255): "))
+            B = int(input("B value (0-255): "))
 
 
         #now get the name of the file we shall create in the end.
@@ -355,12 +364,12 @@ while(True):
     #find length of our traversion and thus gradient.
         traversion_left = 0
 
-        current = Vector2D(initial.x, initial.y)
+        current = initial.copy()
         while (is_within_image(current)):
             traversion_left += 1
             current += direction
 
-        current = copy(initial)
+        current = initial.copy()
 
         #now extend traversion left, because image may not be a box.
         curperp = perp1
@@ -383,50 +392,56 @@ while(True):
                 test_point = [test_point[0] + direction[0], test_point[1] + direction[1]]
 
         print(traversion_left)
-        
         #now the fun part :)
         traversion_factor = traversion_left / frames_left
+        print(traversion_factor)
         frames_done = 0
-        traversion_done = traversion_factor
-        next_frame = int(traversion_factor)
+        traversion_done = 0
+        next_frame = 0
 
-        current = Vector2D(initial.x, initial.y)
+        current = initial.copy()
         curperp = perp1
         timeout = 1.0
+        timingOut = False
         for i in range(0, traversion_left + 1):
             if(i == next_frame):
                 #produce an image file
+                print("producing image")
                 traversion_done += traversion_factor
-                next_frame = int(frames_done)
-                im_saved = Image.fromarray(pixels)
-                path = finalfilename[:len(finalfilename - 4)]
+                next_frame = int(traversion_done)
+                path = finalfilename[:len(finalfilename) - 4]
                 path += str(frames_done) + ".png"
-                pixels.save(path)
+                im.save(path)
                 frames_done += 1
             for j in range(0 , 2):
                 if(j == 0):
                     if(direction.x == 0):
-                        timeout += 0.5
+                        if(timingOut):
+                            timeout += 0.5
                         continue
                     current.x = initial.x + direction.x * i
                 else:
                     if(direction.y == 0):
-                        timeout += 0.5
+                        if(timingOut):
+                            timeout += 0.5
                         continue
                     current.y = initial.y + direction.y * i
                 if is_within_image(current):
                     for p in range(0,2):
                         if(p == 1):
                             curperp = perp2
-                        painted = copy(current)
+                        else:
+                            curperp = perp1
+                        painted = current.copy()
                         while (is_within_image(painted)):
-                            pixels[painted.x, painted.y] = (R, G, B, pixels[painted.x, painted.y])
+                            im.putpixel((painted.x, painted.y), (R, G, B, im.getpixel((painted.x, painted.y))[3]))
                             painted += curperp
                 else:
-                    painted = copy(current)
-                    painted += validperp * (int)timeout
+                    timingOut = True
+                    painted = current.copy()
+                    painted += validperp * int(timeout)
                     while (is_within_image(painted)):
-                            pixels[painted.x, painted.y] = (R, G, B, pixels[painted.x, painted.y])
+                            im.putpixel((painted.x, painted.y), (R, G, B, im.getpixel((painted.x, painted.y))[3]))
                             painted += curperp
                     timeout += 0.5
 
